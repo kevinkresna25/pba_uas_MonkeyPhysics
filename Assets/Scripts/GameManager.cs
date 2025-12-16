@@ -2,22 +2,40 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("Setting Target")]
+    [Header("Game Settings")]
+    public int targetScoreWin = 100;
+    public int startingAmmo = 15;
+
+    [Header("Spawn Settings")]
     public GameObject targetPrefab;
+    public GameObject obstaclePrefab;
     public Transform spawnCenter;   // Titik tengah panggung (patokan spawn)
     public float areaLebar = 5f;    // Seberapa lebar target bisa muncul (Kiri-Kanan)
 
-    [Header("Status Game")]
-    public int targetCount = 0; // Skor saat ini
-    public int targetWin = 5;
+    [Header("UI References (TMP)")]
+    public TMP_Text scoreText;
+    public TMP_Text ammoText;
+    public GameObject gameOverPanel; // Panel Kalah
+    public GameObject winPanel;      // Panel Menang
+
+    // Data Internal
+    private int currentScore = 0;
+    private int currentAmmo;
 
     // Start is called before the first frame update
     void Start()
     {
-        SpawnTarget();
+        currentAmmo = startingAmmo;
+        UpdateUI();
+        SpawnRandomObject();
+
+        // Sembunyikan panel di awal
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        if (winPanel != null) winPanel.SetActive(false);
     }
 
     // Update is called once per frame
@@ -26,37 +44,91 @@ public class GameManager : MonoBehaviour
         
     }
 
-    public void SpawnTarget()
+    public void SpawnRandomObject()
     {
-        // Tentukan posisi acak (Random X)
-        // Rumus: Posisi Tengah + (Acak antara -Lebar sampai +Lebar)
         float randomX = Random.Range(-areaLebar, areaLebar);
+        Vector3 spawnPos = new Vector3(spawnCenter.position.x + randomX, spawnCenter.position.y, spawnCenter.position.z);
 
-        // Kita kunci Y dan Z sesuai titik spawnCenter, cuma X yang berubah
-        Vector3 randomPos = new Vector3(
-            spawnCenter.position.x + randomX,
-            spawnCenter.position.y,
-            spawnCenter.position.z
-        );
-
-        // Munculkan Target Baru
-        Instantiate(targetPrefab, randomPos, Quaternion.identity);
+        int dice = Random.Range(0, 100); 
+        if (dice < 70) Instantiate(targetPrefab, spawnPos, Quaternion.identity);
+        else Instantiate(obstaclePrefab, spawnPos, Quaternion.identity);
     }
 
-    public void TargetEliminated()
-    {
-        // Fungsi ini dipanggil kalau Target kena tembak
-        targetCount++; // Skor nambah 1
+    public bool CanShoot() => currentAmmo > 0;
 
-        if (targetCount >= targetWin)
+    public void UseAmmo()
+    {
+        currentAmmo--;
+        UpdateUI();
+        CheckGameStatus();
+    }
+
+    public void AddScore(int amount)
+    {
+        currentScore += amount;
+        UpdateUI();
+        CheckGameStatus();
+        SpawnRandomObject();
+    }
+
+    void CheckGameStatus()
+    {
+        // LOGIC MENANG
+        if (currentScore >= targetScoreWin)
         {
-            Debug.Log("MENANG! Lanjut Level 2");
-            SceneManager.LoadScene("Level2");
+            Debug.Log("MENANG!");
+            // Munculkan Panel Menang
+            if (winPanel != null)
+            {
+                winPanel.SetActive(true);
+                Cursor.lockState = CursorLockMode.None; // Munculkan kursor mouse
+                Cursor.visible = true;
+            }
+        }
+        // LOGIC KALAH
+        else if (currentAmmo <= 0)
+        {
+            Debug.Log("GAME OVER");
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.SetActive(true);
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+        }
+    }
+
+    void UpdateUI()
+    {
+        if(scoreText) scoreText.text = "Score: " + currentScore + "/" + targetScoreWin;
+        if(ammoText) ammoText.text = "Ammo: " + currentAmmo;
+    }
+
+    public void RestartLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void LoadNextLevel()
+    {
+        // Cek urutan scene di Build Settings
+        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+
+        // Kalau masih ada level berikutnya, lanjut
+        if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
+        {
+            SceneManager.LoadScene(nextSceneIndex);
         }
         else
         {
-            // Kalau belum menang, munculkan target baru lagi
-            SpawnTarget();
+            // Kalau sudah level terakhir, balik ke menu
+            Debug.Log("Tamat! Balik ke Menu.");
+            SceneManager.LoadScene(0);
         }
     }
 }

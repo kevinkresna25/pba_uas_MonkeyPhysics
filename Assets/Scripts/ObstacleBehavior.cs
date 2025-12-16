@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TargetBehavior : MonoBehaviour
+public class ObstacleBehavior : MonoBehaviour
 {
-    public int rewardPoint = 20; // Poin hadiah
-    private bool isHit = false; // Biar nggak kena hit berkali-kali dalam 1 detik
+    public int penaltyPoint = -10; // Nilai hukuman (bisa diubah di Inspector tiap prefab beda)
+    private bool isHit = false;
 
     // Start is called before the first frame update
     void Start()
@@ -21,17 +21,20 @@ public class TargetBehavior : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        // Cek kena Peluru
         if (collision.gameObject.name.Contains("Bullet") && !isHit)
         {
             isHit = true;
+
+            // Lapor ke GameManager
             GameManager gm = FindObjectOfType<GameManager>();
             if (gm != null)
             {
-                gm.AddScore(rewardPoint); // Tambah poin
+                gm.AddScore(penaltyPoint); // Kurangi poin
             }
 
-            Destroy(collision.gameObject);
-            Destroy(gameObject, 0.5f); // Kasih delay dikit buat visual mental
+            Destroy(collision.gameObject); // Hapus peluru
+            Destroy(gameObject); // Hapus rintangan
         }
     }
 }

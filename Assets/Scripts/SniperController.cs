@@ -4,71 +4,80 @@ using UnityEngine;
 
 public class SniperController : MonoBehaviour
 {
-    [Header("Movement Settings")]
+    [Header("Movement")]
     public float moveSpeed = 50f; // Kecepatan gerak (Gaya Dorong)
     public Rigidbody rb;
 
-    [Header("Look Settings")]
+    [Header("Shooting")]
+    public GameObject bulletPrefab; // Peluru (Prefab)
+    public Transform firePoint; // Titik keluar peluru
+    public float shootForce = 50f; // Kekuatan tembakan
+
+    [Header("Aiming")]
     public float mouseSensitivity = 100f; // Kecepatan putar mouse
-    public Transform playerBody;          // Badan Player untuk diputar kiri-kanan
+    public Transform playerBody; // Badan Player untuk diputar kiri-kanan
     float xRotation = 0f;
 
-    [Header("Shooting Settings")]
-    public GameObject bulletPrefab; // Peluru (Prefab)
-    public Transform firePoint;     // Titik keluar peluru
-    public float shootForce = 50f;  // Kekuatan tembakan
+    // Referensi ke GameManager untuk cek peluru
+    private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
         // Mengunci kursor mouse di tengah layar biar enak mainnya
         Cursor.lockState = CursorLockMode.Locked;
-
         if (rb == null) rb = GetComponent<Rigidbody>();
+
+        // Cari GameManager otomatis
+        gameManager = FindObjectOfType<GameManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // --- 1. MOUSE LOOK (Nengok) ---
-        // Mengambil input gerakan mouse
+        // AIMING
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        // Hitungan matematika untuk nengok atas-bawah (biar gak bablas muter kepala)
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        // Memutar Kamera (Atas-Bawah)
         Camera.main.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-
-        // Memutar Badan Player (Kiri-Kanan)
         playerBody.Rotate(Vector3.up * mouseX);
 
-        // --- 2. SHOOTING (Menembak) ---
-        // Jika Klik Kiri (Button 0) ditekan
+        // SHOOTING (Cek Ammo Dulu!)
         if (Input.GetMouseButtonDown(0))
         {
-            Shoot();
+            if (gameManager != null && gameManager.CanShoot())
+            {
+                Shoot();
+                gameManager.UseAmmo(); // Kurangi peluru
+            }
+            else
+            {
+                Debug.Log("Klik! (Peluru Habis)");
+                // Disini bisa tambah sfx "Klik" kosong
+            }
         }
     }
 
     void FixedUpdate()
     {
-        // --- 3. MOVEMENT (Gerak Fisika) ---
+        // MOVEMENT (Gerak Fisika) 
         // Input Horizontal: Tombol A (-1) dan D (1)
         float x = Input.GetAxis("Horizontal");
 
         // Menentukan arah gerak (Samping Kanan/Kiri relatif terhadap arah hadap player)
-        Vector3 moveDirection = transform.right * x;
+        Vector3 moveDir = transform.right * x;
 
         // PENTING: Menggunakan AddForce (Fisika Murni)
         // ForceMode.Force = Mendorong terus menerus seperti mesin mobil
-        rb.AddForce(moveDirection * moveSpeed, ForceMode.Force);
+        rb.AddForce(moveDir * moveSpeed, ForceMode.Force);
     }
 
     void Shoot()
     {
+        // Cek dulu apakah Prefab dan FirePoint sudah diisi di Inspector?
         if (bulletPrefab != null && firePoint != null)
         {
             // 1. Munculkan Peluru dari FirePoint
@@ -78,9 +87,13 @@ public class SniperController : MonoBehaviour
             Rigidbody bulletRb = bullet.GetComponent<Rigidbody>();
             if (bulletRb != null)
             {
-                // ForceMode.Impulse = Gaya ledak instan (cocok untuk peluru/lompat)
+                // ForceMode.Impulse = Gaya ledak instan (cocok untuk peluru)
                 bulletRb.AddForce(firePoint.forward * shootForce, ForceMode.Impulse);
             }
+        }
+        else
+        {
+            Debug.LogError("Bullet Prefab atau Fire Point belum terpasang");
         }
     }
 }
