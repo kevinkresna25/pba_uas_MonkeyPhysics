@@ -10,12 +10,12 @@ public class GameManager : MonoBehaviour
     public int targetScoreWin = 100;
     public int startingAmmo = 15;
 
-    [Header("Target Spawn (Panggung)")]
+    [Header("Target Spawn")]
     public GameObject targetPrefab;
     public Transform targetSpawnCenter; // Titik spawn Target (Jauh)
     public float targetAreaWidth = 8f;  // Lebar area spawn Target
 
-    [Header("Obstacle Spawn (Area Tengah)")]
+    [Header("Obstacle Spawn")]
     public GameObject obstaclePrefab;
     public Transform obstacleSpawnCenter;
     public float obstacleWidth = 3f;  // Lebar (Kiri-Kanan / X)
@@ -24,11 +24,15 @@ public class GameManager : MonoBehaviour
     public int maxObstacles = 8;
     public float obstacleCheckRadius = 1.5f; // Jarak aman antar obstacle
 
-    [Header("UI References (TMP)")]
+    [Header("UI References")]
     public TMP_Text scoreText;
     public TMP_Text ammoText;
     public GameObject gameOverPanel; // Panel Kalah
     public GameObject winPanel;      // Panel Menang
+
+    [HideInInspector]
+    public int activeBullets = 0; // Menghitung peluru yang masih terbang
+    private bool isGameEnded = false; // Biar panel gak muncul dobel
 
     // Data Internal
     private int currentScore = 0;
@@ -58,6 +62,19 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    // --- LOGIC: REGISTER PELURU ---
+    public void RegisterBullet()
+    {
+        activeBullets++; // Ada peluru baru terbang
+    }
+
+    public void UnregisterBullet()
+    {
+        activeBullets--; // Peluru sudah hancur/hilang
+        // Cek status game SETELAH peluru hilang
+        CheckGameStatus();
     }
 
     // --- LOGIC SPAWN TARGET (DELAYED) ---
@@ -115,7 +132,9 @@ public class GameManager : MonoBehaviour
 
     public void TargetDestroyed(int points)
     {
+        if (isGameEnded) return; // Kalau udah game over/win, abaikan skor susulan
         AddScore(points);
+
         // JANGAN langsung spawn. Mulai hitung mundur dulu.
         StartCoroutine(RespawnTargetRoutine());
     }
@@ -123,26 +142,24 @@ public class GameManager : MonoBehaviour
     // Ini fungsi penunda waktu (Coroutine)
     IEnumerator RespawnTargetRoutine()
     {
-        // Tunggu 2 detik (karena target lama hancur dalam 1.5 detik)
         yield return new WaitForSeconds(2f);
-
-        SpawnTarget(); // Baru munculkan target baru
+        if (!isGameEnded) SpawnTarget();
     }
 
     public void ObstacleDestroyed(int penalty)
     {
+        if (isGameEnded) return;
         AddScore(penalty);
         currentObstacleCount--;
-        SpawnObstacleSafe(); // Spawn pengganti (Safe Mode)
+        if (!isGameEnded) SpawnObstacleSafe();
     }
 
-    public bool CanShoot() => currentAmmo > 0;
+    public bool CanShoot() => currentAmmo > 0 && !isGameEnded;
 
     public void UseAmmo()
     {
         currentAmmo--;
         UpdateUI();
-        CheckGameStatus();
     }
 
     public void AddScore(int amount)
@@ -154,28 +171,42 @@ public class GameManager : MonoBehaviour
 
     void CheckGameStatus()
     {
-        // LOGIC MENANG
+        if (isGameEnded) return; // Jangan cek lagi kalau sudah selesai
+
+        // 1. Cek MENANG (Prioritas Utama)
         if (currentScore >= targetScoreWin)
         {
-            Debug.Log("MENANG!");
-            // Munculkan Panel Menang
-            if (winPanel != null)
-            {
-                winPanel.SetActive(true);
-                Cursor.lockState = CursorLockMode.None; // Munculkan kursor mouse
-                Cursor.visible = true;
-            }
+            WinGame();
         }
-        // LOGIC KALAH
-        else if (currentAmmo <= 0)
+        // 2. Cek KALAH
+        // Kalah cuma kalau: Ammo Habis DAN Tidak ada peluru di udara
+        else if (currentAmmo <= 0 && activeBullets <= 0)
         {
-            Debug.Log("GAME OVER");
-            if (gameOverPanel != null)
-            {
-                gameOverPanel.SetActive(true);
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
+            LoseGame();
+        }
+    }
+
+    void WinGame()
+    {
+        isGameEnded = true;
+        Debug.Log("MENANG!");
+        if (winPanel != null)
+        {
+            winPanel.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    void LoseGame()
+    {
+        isGameEnded = true;
+        Debug.Log("GAME OVER");
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
     }
 
@@ -191,19 +222,8 @@ public class GameManager : MonoBehaviour
 
     public void LoadNextLevel()
     {
-        // Cek urutan scene di Build Settings
         int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
-
-        // Kalau masih ada level berikutnya, lanjut
-        if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
-        {
-            SceneManager.LoadScene(nextSceneIndex);
-        }
-        else
-        {
-            // Kalau sudah level terakhir, balik ke menu
-            Debug.Log("Tamat! Balik ke Menu.");
-            SceneManager.LoadScene(0);
-        }
+        if (nextSceneIndex < SceneManager.sceneCountInBuildSettings) SceneManager.LoadScene(nextSceneIndex);
+        else SceneManager.LoadScene(0);
     }
 }

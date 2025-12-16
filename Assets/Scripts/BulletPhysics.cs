@@ -8,13 +8,21 @@ public class BulletPhysics : MonoBehaviour
     public bool isWindy = false; // Centang di Level 2
     public Vector3 windForce = new Vector3(20f, 0, 0); // Angin dorong ke kanan
     private Rigidbody rb;
+    private GameManager gm;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
 
-        // Hancurkan peluru ini setelah 3 detik
+        // Cari GameManager dan Lapor "Ada Peluru Baru!"
+        gm = FindObjectOfType<GameManager>();
+        if (gm != null)
+        {
+            gm.RegisterBullet();
+        }
+
+        // Hancur otomatis setalah 3 detik (kalau meleset ke angkasa)
         Destroy(gameObject, 3f);
     }
 
@@ -34,10 +42,14 @@ public class BulletPhysics : MonoBehaviour
         }
     }
 
-    // Deteksi Tabrakan
-    void OnCollisionEnter(Collision collision)
+    // Fungsi bawaan Unity yang dipanggil SAAT OBJEK HANCUR
+    // Baik hancur karena nabrak, atau hancur karena waktu habis
+    void OnDestroy()
     {
-        // Jika nabrak sesuatu, hancurkan peluru langsung
-        Destroy(gameObject);
+        // Lapor ke GameManager "Peluru Sudah Hilang"
+        if (gm != null)
+        {
+            gm.UnregisterBullet();
+        }
     }
 }
