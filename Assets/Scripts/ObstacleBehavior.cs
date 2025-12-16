@@ -21,20 +21,22 @@ public class ObstacleBehavior : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        // Cek kena Peluru
         if (collision.gameObject.name.Contains("Bullet") && !isHit)
         {
             isHit = true;
-
-            // Lapor ke GameManager
             GameManager gm = FindObjectOfType<GameManager>();
             if (gm != null)
             {
-                gm.AddScore(penaltyPoint); // Kurangi poin
+                gm.ObstacleDestroyed(penaltyPoint);
             }
 
             Destroy(collision.gameObject); // Hapus peluru
-            Destroy(gameObject); // Hapus rintangan
+
+            Collider col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+
+            // Langsung hapus Obstacle detik itu juga (tanpa delay)
+            Destroy(gameObject);
         }
     }
 }

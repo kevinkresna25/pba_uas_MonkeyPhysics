@@ -177,7 +177,7 @@ GameObject:
   - component: {fileID: 486611061}
   - component: {fileID: 486611060}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Stage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -191,7 +191,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 486611058}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 15}
+  m_LocalPosition: {x: 0, y: 0, z: 18}
   m_LocalScale: {x: 20, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -306,7 +306,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6645512209326954687, guid: 9bf4700921f55e6459cd34a97f845a5f, type: 3}
       propertyPath: m_RootOrder
-      value: 6
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6645512209326954687, guid: 9bf4700921f55e6459cd34a97f845a5f, type: 3}
       propertyPath: m_AnchorMax.x
@@ -561,7 +561,7 @@ GameObject:
   m_Component:
   - component: {fileID: 879161559}
   m_Layer: 0
-  m_Name: Stage
+  m_Name: Building
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -584,7 +584,7 @@ Transform:
   - {fileID: 1877565833}
   - {fileID: 486611059}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
@@ -703,9 +703,13 @@ MonoBehaviour:
   targetScoreWin: 100
   startingAmmo: 15
   targetPrefab: {fileID: 5155220508404202688, guid: 936200d66cf03464291a0a4a42bd3316, type: 3}
+  targetSpawnCenter: {fileID: 1908723473}
+  targetAreaWidth: 8
   obstaclePrefab: {fileID: 195076436998950407, guid: ffbf297d5e6ce1f408616bf34b4a4a8d, type: 3}
-  spawnCenter: {fileID: 1908723473}
-  areaLebar: 8
+  obstacleSpawnCenter: {fileID: 1777207727}
+  obstacleAreaWidth: 6
+  minObstacles: 5
+  maxObstacles: 10
   scoreText: {fileID: 422580657}
   ammoText: {fileID: 2120223757}
   gameOverPanel: {fileID: 1805926604}
@@ -723,7 +727,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1353693075
 GameObject:
@@ -889,7 +893,38 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1777207726
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1777207727}
+  m_Layer: 0
+  m_Name: SpawnObstacle_Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1777207727
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1777207726}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1805926604 stripped
 GameObject:
@@ -1005,13 +1040,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1871849282}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -5}
+  m_LocalPosition: {x: 0, y: 1, z: -18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 963194228}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1871849288
 MonoBehaviour:
@@ -1139,7 +1174,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1908723473}
   m_Layer: 0
-  m_Name: SpawnPoint
+  m_Name: SpawnTarget_Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1153,12 +1188,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1908723472}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 15}
+  m_LocalPosition: {x: 0, y: 2, z: 18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2039142546
 GameObject:

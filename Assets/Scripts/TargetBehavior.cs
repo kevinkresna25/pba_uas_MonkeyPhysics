@@ -27,11 +27,12 @@ public class TargetBehavior : MonoBehaviour
             GameManager gm = FindObjectOfType<GameManager>();
             if (gm != null)
             {
-                gm.AddScore(rewardPoint); // Tambah poin
+                // Panggil fungsi khusus Target di GM
+                gm.TargetDestroyed(rewardPoint);
             }
 
             Destroy(collision.gameObject);
-            Destroy(gameObject, 0.5f); // Kasih delay dikit buat visual mental
+            Destroy(gameObject, 1.5f); // Efek mental dulu baru hancur
         }
     }
 }
