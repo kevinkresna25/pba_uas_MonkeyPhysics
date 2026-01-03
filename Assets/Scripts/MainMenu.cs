@@ -31,4 +31,9 @@ public class MainMenu : MonoBehaviour
         Debug.Log("Keluar dari Game!");
         Application.Quit();
     }
+
+    public void OpenCredits()
+    {
+        SceneManager.LoadScene("Credits");
+    }
 }
