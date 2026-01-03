@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4172345037188494939}
   - component: {fileID: 1014974611988736879}
   m_Layer: 0
-  m_Name: Kayu
+  m_Name: Wood
   m_TagString: Obstacle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
