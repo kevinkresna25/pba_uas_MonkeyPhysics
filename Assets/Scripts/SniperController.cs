@@ -165,6 +165,17 @@ public class SniperController : MonoBehaviour
 
             // --- EKSEKUSI TEMBAK ---
             GameObject bullet = Instantiate(bulletPrefab, spawnPosition, spawnRotation);
+
+            // BUG TERPENTAL: IGNORE COLLISION
+            Collider bulletCollider = bullet.GetComponent<Collider>();
+            Collider playerCollider = GetComponent<Collider>();
+
+            if (bulletCollider != null && playerCollider != null)
+            {
+                // Peluru ini jangan nabrak Player
+                Physics.IgnoreCollision(bulletCollider, playerCollider);
+            }
+            
             Rigidbody bulletRb = bullet.GetComponent<Rigidbody>();
 
             if (bulletRb != null)

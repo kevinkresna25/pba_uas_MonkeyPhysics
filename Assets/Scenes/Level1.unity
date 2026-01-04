@@ -224,37 +224,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2967893401005709350, guid: 84b74576f84769143b32dfb33adced7b, type: 3}
   m_PrefabInstance: {fileID: 838076924}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &240330177
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 240330178}
-  m_Layer: 0
-  m_Name: FirePoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &240330178
+--- !u!4 &240330178 stripped
 Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 240330178, guid: 84b74576f84769143b32dfb33adced7b, type: 3}
+  m_PrefabInstance: {fileID: 838076924}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 240330177}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.03, z: 1.2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 838076925}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &422580657 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6645512209073215729, guid: 9bf4700921f55e6459cd34a97f845a5f, type: 3}
@@ -1290,7 +1264,7 @@ MonoBehaviour:
   rb: {fileID: 0}
   bulletPrefab: {fileID: 8476977043092970389, guid: adf911351187c1540a275d02fbe74ecc, type: 3}
   firePoint: {fileID: 240330178}
-  shootForce: 100
+  shootForce: 80
   mouseSensitivity: 100
   playerBody: {fileID: 1871849287}
   mainCamera: {fileID: 963194227}

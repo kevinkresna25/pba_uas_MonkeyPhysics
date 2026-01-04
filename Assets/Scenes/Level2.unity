@@ -367,37 +367,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &240330177
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 240330178}
-  m_Layer: 0
-  m_Name: FirePoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &240330178
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 240330177}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.03, z: 1.2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 838076925}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &267220965
 GameObject:
   m_ObjectHideFlags: 0
@@ -6232,6 +6201,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2967893401005709350, guid: 84b74576f84769143b32dfb33adced7b, type: 3}
   m_PrefabInstance: {fileID: 838076924}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &838076927 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 240330178, guid: 84b74576f84769143b32dfb33adced7b, type: 3}
+  m_PrefabInstance: {fileID: 838076924}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &879161558
 GameObject:
   m_ObjectHideFlags: 0
@@ -6919,7 +6893,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 754f09fbc80dd2141be54af2be75e369, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetScoreWin: 150
+  targetScoreWin: 200
   startingAmmo: 30
   targetPrefab: {fileID: 5155220508404202688, guid: 936200d66cf03464291a0a4a42bd3316, type: 3}
   targetSpawnCenter: {fileID: 1908723473}
@@ -8373,7 +8347,7 @@ MonoBehaviour:
   moveSpeed: 50
   rb: {fileID: 0}
   bulletPrefab: {fileID: 8476977043092970389, guid: 5af26cb170b0ec74db262a278ef7333f, type: 3}
-  firePoint: {fileID: 240330178}
+  firePoint: {fileID: 838076927}
   shootForce: 60
   mouseSensitivity: 100
   playerBody: {fileID: 1871849287}
