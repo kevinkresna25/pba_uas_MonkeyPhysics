@@ -12,6 +12,8 @@ public class SniperController : MonoBehaviour
     public GameObject bulletPrefab; // Peluru (Prefab)
     public Transform firePoint; // Titik keluar peluru
     public float shootForce = 50f; // Kekuatan tembakan
+    public float timeBetweenShots = 3f; // Jeda 3 detik tiap tembakan
+    private float nextTimeToFire = 0f;    // Kapan boleh nembak lagi?
 
     [Header("Aiming & Scope")]
     public float mouseSensitivity = 100f;
@@ -40,10 +42,7 @@ public class SniperController : MonoBehaviour
         gameManager = FindObjectOfType<GameManager>();
 
         // scope mati
-        if (scopeOverlay != null)
-        {
-            scopeOverlay.SetActive(false); // Pastikan mati saat game mulai
-        }
+        if (scopeOverlay != null) scopeOverlay.SetActive(false);
 
         // Pastikan Senjata Muncul & Kamera Normal
         if (weaponModel != null) weaponModel.SetActive(true);
@@ -68,19 +67,27 @@ public class SniperController : MonoBehaviour
         {
             isScoped = !isScoped; // Switch status (True jadi False, False jadi True)
 
-            if (isScoped)
-                StartScope();
-            else
-                EndScope();
+            if (isScoped) StartScope();
+            else EndScope();
         }
 
-        // SHOOTING
+        // LOGIC SHOOTING (DENGAN JEDA)
         if (Input.GetMouseButtonDown(0))
         {
-            if (gameManager != null && gameManager.CanShoot())
+            // Syarat Nembak:
+            // 1. Peluru di GameManager ada
+            // 2. Waktu sekarang (Time.time) sudah melewati Waktu Jeda (nextTimeToFire)
+            if (gameManager != null && gameManager.CanShoot() && Time.time >= nextTimeToFire)
             {
+                // Set waktu tembak berikutnya = Waktu sekarang + Jeda
+                nextTimeToFire = Time.time + timeBetweenShots;
+
                 Shoot();
                 gameManager.UseAmmo();
+            }
+            else if (Time.time < nextTimeToFire)
+            {
+                Debug.Log("Sedang Kokang...");
             }
         }
     }
