@@ -9,11 +9,22 @@ public class SniperController : MonoBehaviour
     public Rigidbody rb;
 
     [Header("Shooting")]
-    public GameObject bulletPrefab; // Peluru (Prefab)
-    public Transform firePoint; // Titik keluar peluru
-    public float shootForce = 50f; // Kekuatan tembakan
-    public float timeBetweenShots = 3f; // Jeda 3 detik tiap tembakan
-    private float nextTimeToFire = 0f;    // Kapan boleh nembak lagi?
+    public GameObject bulletPrefab;     // Peluru (Prefab)
+    public Transform firePoint;         // Titik keluar peluru
+    public float shootForce = 50f;      // Kekuatan tembakan
+    public float timeBetweenShots = 2f; // Jeda 2 detik tiap tembakan
+    private float nextTimeToFire = 0f;  // Kapan boleh nembak lagi?
+
+    [Header("Recoil")]
+    // Camera Recoil
+    public float verticalRecoil = 5f;    // Seberapa tinggi kamera mental
+    public float recoilSnappiness = 10f; // Seberapa CEPAT kamera naik (Hentakan)
+    public float recoilReturnSpeed = 2f; // Seberapa LAMBAT kamera turun (Balik ke semula)
+
+    // Weapon Recoil
+    public float gunKickBack = 0.2f;
+    public float weaponReturnSpeed = 5f;
+    public float weaponSnappiness = 20f;
 
     [Header("Aiming & Scope")]
     public float mouseSensitivity = 100f;
@@ -27,6 +38,15 @@ public class SniperController : MonoBehaviour
 
     private float xRotation = 0f;
     private bool isScoped = false;  // Status apakah sedang ngeker atau tidak
+
+    // Internal Variables untuk Smooth Recoil
+    private float currentRecoilXPos; // Posisi recoil saat ini
+    private float targetRecoilXPos;  // Target recoil (puncak hentakan)
+
+    // Internal Variables untuk Weapon Recoil
+    private Vector3 originalWeaponPos;
+    private Vector3 currentWeaponPos;
+    private Vector3 targetWeaponPos;
 
     // Referensi ke GameManager
     private GameManager gameManager;
@@ -45,7 +65,12 @@ public class SniperController : MonoBehaviour
         if (scopeOverlay != null) scopeOverlay.SetActive(false);
 
         // Pastikan Senjata Muncul & Kamera Normal
-        if (weaponModel != null) weaponModel.SetActive(true);
+        if (weaponModel != null)
+        {
+            weaponModel.SetActive(true);
+            // Simpan posisi awal senjata untuk dikembalikan setelah recoil
+            originalWeaponPos = weaponModel.transform.localPosition;
+        }
         if (mainCamera != null) mainCamera.fieldOfView = defaultFOV;
     }
 
@@ -59,10 +84,21 @@ public class SniperController : MonoBehaviour
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        Camera.main.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        // LOGIC SMOOTH CAMERA RECOIL
+        // Recoil pelan-pelan turun ke 0 (Recovery)
+        targetRecoilXPos = Mathf.Lerp(targetRecoilXPos, 0, Time.deltaTime * recoilReturnSpeed);
+
+        // Posisi Recoil saat ini mengejar Target Recoil (Hentakan)
+        currentRecoilXPos = Mathf.Lerp(currentRecoilXPos, targetRecoilXPos, Time.deltaTime * recoilSnappiness);
+
+        // Terapkan Rotasi Kamera: (Mouse Input + Recoil Input)
+        // Recoil cuma nambahin offset sementara, tidak mengubah xRotation asli
+        Camera.main.transform.localRotation = Quaternion.Euler(xRotation - currentRecoilXPos, 0f, 0f);
+
+        // Putar Badan Player (Kiri-Kanan)
         playerBody.Rotate(Vector3.up * mouseX);
 
-        // SCOPE INPUT (Klik Kanan) <-- FITUR BARU
+        // SCOPE INPUT (Klik Kanan) 
         if (Input.GetMouseButtonDown(1)) // 1 = Klik Kanan
         {
             isScoped = !isScoped; // Switch status (True jadi False, False jadi True)
@@ -89,6 +125,14 @@ public class SniperController : MonoBehaviour
             {
                 Debug.Log("Sedang Kokang...");
             }
+        }
+
+        // WEAPON RECOIL ANIMATION
+        if (weaponModel != null && !isScoped)
+        {
+            targetWeaponPos = Vector3.Lerp(targetWeaponPos, Vector3.zero, Time.deltaTime * weaponReturnSpeed);
+            currentWeaponPos = Vector3.Lerp(currentWeaponPos, targetWeaponPos, Time.deltaTime * weaponSnappiness);
+            weaponModel.transform.localPosition = originalWeaponPos + currentWeaponPos;
         }
     }
 
@@ -128,6 +172,13 @@ public class SniperController : MonoBehaviour
 
     void Shoot()
     {
+        // APPLY RECOIL
+        // Kita tambah target recoil, nanti di Update() dia bakal di-smooth-kan
+        targetRecoilXPos += verticalRecoil;
+
+        // Weapon Kickback
+        targetWeaponPos.z -= gunKickBack;
+
         if (bulletPrefab != null && firePoint != null && mainCamera != null)
         {
             Vector3 spawnPosition;
