@@ -13,12 +13,20 @@ public class SniperController : MonoBehaviour
     public Transform firePoint; // Titik keluar peluru
     public float shootForce = 50f; // Kekuatan tembakan
 
-    [Header("Aiming")]
-    public float mouseSensitivity = 100f; // Kecepatan putar mouse
-    public Transform playerBody; // Badan Player untuk diputar kiri-kanan
-    float xRotation = 0f;
+    [Header("Aiming & Scope")]
+    public float mouseSensitivity = 100f;
+    public Transform playerBody;
+    public Camera mainCamera;       // Referensi Kamera untuk di-Zoom
+    public GameObject weaponModel;  // Referensi Senjata untuk disembunyikan
+    public GameObject scopeOverlay; // Referensi Gambar Scope di UI
 
-    // Referensi ke GameManager untuk cek peluru
+    public float defaultFOV = 60f;  // Jarak pandang normal
+    public float scopedFOV = 15f;   // Jarak pandang saat zoom (makin kecil makin dekat)
+
+    private float xRotation = 0f;
+    private bool isScoped = false;  // Status apakah sedang ngeker atau tidak
+
+    // Referensi ke GameManager
     private GameManager gameManager;
 
     // Start is called before the first frame update
@@ -30,12 +38,22 @@ public class SniperController : MonoBehaviour
 
         // Cari GameManager otomatis
         gameManager = FindObjectOfType<GameManager>();
+
+        // scope mati
+        if (scopeOverlay != null)
+        {
+            scopeOverlay.SetActive(false); // Pastikan mati saat game mulai
+        }
+
+        // Pastikan Senjata Muncul & Kamera Normal
+        if (weaponModel != null) weaponModel.SetActive(true);
+        if (mainCamera != null) mainCamera.fieldOfView = defaultFOV;
     }
 
     // Update is called once per frame
     void Update()
     {
-        // AIMING
+        // AIMING (Mouse Look)
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
@@ -45,18 +63,24 @@ public class SniperController : MonoBehaviour
         Camera.main.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         playerBody.Rotate(Vector3.up * mouseX);
 
-        // SHOOTING (Cek Ammo Dulu!)
+        // SCOPE INPUT (Klik Kanan) <-- FITUR BARU
+        if (Input.GetMouseButtonDown(1)) // 1 = Klik Kanan
+        {
+            isScoped = !isScoped; // Switch status (True jadi False, False jadi True)
+
+            if (isScoped)
+                StartScope();
+            else
+                EndScope();
+        }
+
+        // SHOOTING
         if (Input.GetMouseButtonDown(0))
         {
             if (gameManager != null && gameManager.CanShoot())
             {
                 Shoot();
-                gameManager.UseAmmo(); // Kurangi peluru
-            }
-            else
-            {
-                Debug.Log("Klik! (Peluru Habis)");
-                // Disini bisa tambah sfx "Klik" kosong
+                gameManager.UseAmmo();
             }
         }
     }
@@ -75,25 +99,83 @@ public class SniperController : MonoBehaviour
         rb.AddForce(moveDir * moveSpeed, ForceMode.Force);
     }
 
+    void StartScope()
+    {
+        if (scopeOverlay) scopeOverlay.SetActive(true); // Munculkan Overlay Hitam
+        if (weaponModel) weaponModel.SetActive(false);  // Sembunyikan Senjata (biar gak ngalangin)
+        if (mainCamera) mainCamera.fieldOfView = scopedFOV; // Zoom Kamera
+
+        // Kurangi sensitivitas mouse pas lagi ngeker biar stabil
+        mouseSensitivity = 20f;
+    }
+
+    void EndScope()
+    {
+        if (scopeOverlay) scopeOverlay.SetActive(false); // Sembunyikan Overlay
+        if (weaponModel) weaponModel.SetActive(true);    // Munculkan Senjata Lagi
+        if (mainCamera) mainCamera.fieldOfView = defaultFOV; // Reset Kamera
+
+        // Kembalikan sensitivitas mouse normal
+        mouseSensitivity = 100f;
+    }
+
     void Shoot()
     {
-        // Cek dulu apakah Prefab dan FirePoint sudah diisi di Inspector?
-        if (bulletPrefab != null && firePoint != null)
+        if (bulletPrefab != null && firePoint != null && mainCamera != null)
         {
-            // 1. Munculkan Peluru dari FirePoint
-            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            Vector3 spawnPosition;
+            Quaternion spawnRotation;
+            Vector3 forceDirection;
 
-            // 2. Dorong Peluru dengan Fisika (Impulse)
+            // --- LOGIKA HYBRID ---
+            if (isScoped)
+            {
+                // MODE SCOPE: Peluru keluar dari "Mata" (Kamera)
+                // Ini membuat peluru keluar PERSIS di titik tengah crosshair
+
+                // Spawn sedikit di depan kamera (0.5 meter) biar gak nabrak muka sendiri
+                spawnPosition = mainCamera.transform.position + (mainCamera.transform.forward * 0.5f);
+
+                // Arahnya lurus mengikuti arah pandang kamera
+                spawnRotation = mainCamera.transform.rotation;
+                forceDirection = mainCamera.transform.forward;
+            }
+            else
+            {
+                // MODE NORMAL: Peluru keluar dari Ujung Senjata
+                // Kita pakai teknik Raycast biar tetap akurat ke tengah walaupun dari samping
+
+                Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+                RaycastHit hit;
+                Vector3 targetPoint;
+
+                // Cek tabrakan di tengah layar
+                if (Physics.Raycast(ray, out hit))
+                    targetPoint = hit.point;
+                else
+                    targetPoint = ray.GetPoint(1000); // Tembak ke langit
+
+                spawnPosition = firePoint.position;
+
+                // Hitung arah dari senjata ke titik tengah layar
+                Vector3 direction = targetPoint - firePoint.position;
+                spawnRotation = Quaternion.LookRotation(direction);
+                forceDirection = direction.normalized;
+            }
+
+            // --- EKSEKUSI TEMBAK ---
+            GameObject bullet = Instantiate(bulletPrefab, spawnPosition, spawnRotation);
             Rigidbody bulletRb = bullet.GetComponent<Rigidbody>();
+
             if (bulletRb != null)
             {
-                // ForceMode.Impulse = Gaya ledak instan (cocok untuk peluru)
-                bulletRb.AddForce(firePoint.forward * shootForce, ForceMode.Impulse);
+                // Reset kecepatan peluru biar stabil
+                bulletRb.velocity = Vector3.zero;
+                bulletRb.angularVelocity = Vector3.zero;
+
+                // Dorong!
+                bulletRb.AddForce(forceDirection * shootForce, ForceMode.Impulse);
             }
-        }
-        else
-        {
-            Debug.LogError("Bullet Prefab atau Fire Point belum terpasang");
         }
     }
 }
