@@ -11,7 +11,7 @@ public class WindManager : MonoBehaviour
 
     [Header("Visuals")]
     public ParticleSystem snowParticle; // Partikel Salju
-    public TMP_Text windIndicatorText;  // UI Teks ("<<" atau ">>")
+    public TMP_Text windIndicatorText;  // UI Teks Arah
 
     // Variabel Publik yang bisa dibaca Peluru
     [HideInInspector]
@@ -49,7 +49,7 @@ public class WindManager : MonoBehaviour
             // Angin ke KANAN (X Positif)
             currentWindForce = new Vector3(windStrength, 0, 0);
 
-            if (windIndicatorText) windIndicatorText.text = "Wind: -->>";
+            if (windIndicatorText) windIndicatorText.text = "Wind: ->>";
             if (windIndicatorText) windIndicatorText.color = Color.red;
 
             // Update Rotasi Partikel Salju (Biar miring ke kanan)
@@ -69,7 +69,7 @@ public class WindManager : MonoBehaviour
             // Angin ke KIRI (X Negatif)
             currentWindForce = new Vector3(-windStrength, 0, 0);
 
-            if (windIndicatorText) windIndicatorText.text = "Wind: <<--";
+            if (windIndicatorText) windIndicatorText.text = "Wind: <<-";
             if (windIndicatorText) windIndicatorText.color = Color.blue;
 
             // Update Rotasi Partikel Salju (Biar miring ke kiri)
