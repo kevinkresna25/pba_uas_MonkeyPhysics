@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7312030148889186031}
   - component: {fileID: -7447174433826523118}
   m_Layer: 0
-  m_Name: Bullet
+  m_Name: Bullet_Wind
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -127,5 +127,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b312fe42b76a534781bd52e4fde441e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isWindy: 0
+  isWindy: 1
   windForce: {x: -20, y: 0, z: 0}

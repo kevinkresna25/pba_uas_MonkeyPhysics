@@ -4,23 +4,23 @@ using UnityEngine;
 
 public class BulletPhysics : MonoBehaviour
 {
-    [Header("Wind Settings (Level 2)")]
-    public bool isWindy = false; // Centang di Level 2
-    public Vector3 windForce = new Vector3(20f, 0, 0); // Angin dorong ke kanan
+    [Header("Settings")]
+    public bool isWindy = false;
+
     private Rigidbody rb;
     private GameManager gm;
+    private WindManager windManager; // Referensi ke Angin
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
 
-        // Cari GameManager dan Lapor "Ada Peluru Baru!"
         gm = FindObjectOfType<GameManager>();
-        if (gm != null)
-        {
-            gm.RegisterBullet();
-        }
+        if (gm != null) gm.RegisterBullet();
+
+        // Cari Wind Manager
+        windManager = FindObjectOfType<WindManager>();
 
         // Hancur otomatis setalah 3 detik (kalau meleset ke angkasa)
         Destroy(gameObject, 3f);
@@ -34,11 +34,10 @@ public class BulletPhysics : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Jika mode Angin aktif (Level 2)
-        if (isWindy)
+        if (isWindy && windManager != null)
         {
-            // Tambahkan gaya angin terus menerus ke peluru
-            rb.AddForce(windForce, ForceMode.Force);
+            // Ambil arah angin TERBARU dari Manager
+            rb.AddForce(windManager.currentWindForce, ForceMode.Force);
         }
     }
 
@@ -47,9 +46,6 @@ public class BulletPhysics : MonoBehaviour
     void OnDestroy()
     {
         // Lapor ke GameManager "Peluru Sudah Hilang"
-        if (gm != null)
-        {
-            gm.UnregisterBullet();
-        }
+        if (gm != null) gm.UnregisterBullet();
     }
 }
