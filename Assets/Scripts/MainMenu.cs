@@ -8,7 +8,8 @@ public class MainMenu : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     // Update is called once per frame
@@ -20,20 +21,21 @@ public class MainMenu : MonoBehaviour
     // Dipanggil saat tombol START ditekan
     public void PlayGame()
     {
-        // Masuk ke Scene Level 1
-        // Pastikan nama scene kamu nanti "Level1" persis
         SceneManager.LoadScene("Level1");
     }
 
-    // Dipanggil saat tombol EXIT ditekan
-    public void QuitGame()
+    public void OpenTutorial()
     {
-        Debug.Log("Keluar dari Game!");
-        Application.Quit();
+        SceneManager.LoadScene("TutorialLevel");
     }
 
     public void OpenCredits()
     {
         SceneManager.LoadScene("Credits");
+    }
+    public void QuitGame()
+    {
+        Debug.Log("Keluar dari Game!");
+        Application.Quit();
     }
 }

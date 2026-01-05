@@ -115,20 +115,31 @@ public class SniperController : MonoBehaviour
         // LOGIC SHOOTING (DENGAN JEDA)
         if (Input.GetMouseButtonDown(0))
         {
-            // Syarat Nembak:
-            // 1. Peluru di GameManager ada
-            // 2. Waktu sekarang (Time.time) sudah melewati Waktu Jeda (nextTimeToFire)
-            if (gameManager != null && gameManager.CanShoot() && Time.time >= nextTimeToFire)
+            // Cek Waktu Jeda dulu
+            if (Time.time >= nextTimeToFire)
             {
-                // Set waktu tembak berikutnya = Waktu sekarang + Jeda
-                nextTimeToFire = Time.time + timeBetweenShots;
+                bool bolehNembak = false;
 
-                Shoot();
-                gameManager.UseAmmo();
-            }
-            else if (Time.time < nextTimeToFire)
-            {
-                Debug.Log("Sedang Kokang...");
+                // KONDISI A: Ada GameManager (Level 1 & 2) -> Cek Peluru
+                if (gameManager != null)
+                {
+                    if (gameManager.CanShoot()) bolehNembak = true;
+                }
+                // KONDISI B: Tidak ada GameManager (Tutorial) -> Bebas Nembak
+                else
+                {
+                    bolehNembak = true;
+                }
+
+                // Eksekusi Tembak
+                if (bolehNembak)
+                {
+                    nextTimeToFire = Time.time + timeBetweenShots;
+                    Shoot();
+
+                    // Kurangi peluru HANYA jika ada GameManager
+                    if (gameManager != null) gameManager.UseAmmo();
+                }
             }
         }
 
