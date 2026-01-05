@@ -13,7 +13,7 @@ public class SniperController : MonoBehaviour
     public Transform firePoint;         // Titik keluar peluru
     public float shootForce = 50f;      // Kekuatan tembakan
     public float timeBetweenShots = 2f; // Jeda 2 detik tiap tembakan
-    private float nextTimeToFire = 0f;  // Kapan boleh nembak lagi?
+    public ParticleSystem muzzleFlash;
 
     [Header("Recoil")]
     // Camera Recoil
@@ -35,6 +35,7 @@ public class SniperController : MonoBehaviour
 
     public float defaultFOV = 60f;  // Jarak pandang normal
     public float scopedFOV = 15f;   // Jarak pandang saat zoom (makin kecil makin dekat)
+    private float nextTimeToFire = 0f;  // Kapan boleh nembak lagi?
 
     private float xRotation = 0f;
     private bool isScoped = false;  // Status apakah sedang ngeker atau tidak
@@ -172,6 +173,37 @@ public class SniperController : MonoBehaviour
 
     void Shoot()
     {
+        // MAINKAN EFEK API
+        if (muzzleFlash != null)
+        {
+            if (isScoped)
+            {
+                // JIKA SCOPE: Taruh MuzzleFlash di depan mata
+                // Kita tambahkan sedikit offset ke bawah
+                // Angka 0.15f bisa kamu sesuaikan (semakin besar semakin turun)
+                Vector3 scopeFlashPos = mainCamera.transform.position
+                                      + (mainCamera.transform.forward * 0.5f)
+                                      - (mainCamera.transform.up * 0.1f);
+
+                muzzleFlash.transform.position = scopeFlashPos;
+                muzzleFlash.transform.rotation = mainCamera.transform.rotation;
+
+                // Kecilkan sedikit biar flash-nya gak bikin buta player
+                muzzleFlash.transform.localScale = Vector3.one * 0.5f;
+            }
+            else
+            {
+                // JIKA NORMAL: Taruh MuzzleFlash di ujung senjata (FirePoint)
+                muzzleFlash.transform.position = firePoint.position;
+                muzzleFlash.transform.rotation = firePoint.rotation;
+
+                // Ukuran normal
+                muzzleFlash.transform.localScale = Vector3.one;
+            }
+
+            muzzleFlash.Play();
+        }
+
         // APPLY RECOIL
         // Kita tambah target recoil, nanti di Update() dia bakal di-smooth-kan
         targetRecoilXPos += verticalRecoil;
@@ -208,10 +240,8 @@ public class SniperController : MonoBehaviour
                 Vector3 targetPoint;
 
                 // Cek tabrakan di tengah layar
-                if (Physics.Raycast(ray, out hit))
-                    targetPoint = hit.point;
-                else
-                    targetPoint = ray.GetPoint(1000); // Tembak ke langit
+                if (Physics.Raycast(ray, out hit)) targetPoint = hit.point;
+                else targetPoint = ray.GetPoint(1000); // Tembak ke langit
 
                 spawnPosition = firePoint.position;
 

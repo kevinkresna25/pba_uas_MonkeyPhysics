@@ -6,6 +6,10 @@ public class BulletPhysics : MonoBehaviour
 {
     [Header("Settings")]
     public bool isWindy = false;
+    public Vector3 windForce = new Vector3(20f, 0, 0);
+
+    [Header("VFX")]
+    public GameObject hitEffectPrefab;
 
     private Rigidbody rb;
     private GameManager gm;
@@ -39,6 +43,24 @@ public class BulletPhysics : MonoBehaviour
             // Ambil arah angin TERBARU dari Manager
             rb.AddForce(windManager.currentWindForce, ForceMode.Force);
         }
+    }
+
+    // LOGIC TABRAKAN & EFEK
+    void OnCollisionEnter(Collision collision)
+    {
+        // 1. Munculkan Efek Debu/Ledakan (BARU)
+        if (hitEffectPrefab != null)
+        {
+            // ContactPoint adalah titik pas peluru nyentuh tembok
+            ContactPoint contact = collision.contacts[0];
+            Quaternion rot = Quaternion.LookRotation(contact.normal);
+
+            GameObject vfx = Instantiate(hitEffectPrefab, contact.point, rot);
+            Destroy(vfx, 1f); // Hapus sisa efek setelah 1 detik
+        }
+
+        // 2. Hancurkan Peluru
+        Destroy(gameObject);
     }
 
     // Fungsi bawaan Unity yang dipanggil SAAT OBJEK HANCUR

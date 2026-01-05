@@ -128,3 +128,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isWindy: 1
+  windForce: {x: 20, y: 0, z: 0}
+  hitEffectPrefab: {fileID: 4711836189377301787, guid: 8e9525a737455b64aa018930f4a9f12f, type: 3}
