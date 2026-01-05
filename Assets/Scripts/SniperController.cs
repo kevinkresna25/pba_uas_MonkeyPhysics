@@ -32,10 +32,13 @@ public class SniperController : MonoBehaviour
     public Camera mainCamera;       // Referensi Kamera untuk di-Zoom
     public GameObject weaponModel;  // Referensi Senjata untuk disembunyikan
     public GameObject scopeOverlay; // Referensi Gambar Scope di UI
-
     public float defaultFOV = 60f;  // Jarak pandang normal
     public float scopedFOV = 15f;   // Jarak pandang saat zoom (makin kecil makin dekat)
-    private float nextTimeToFire = 0f;  // Kapan boleh nembak lagi?
+
+    [Header("Audio")]
+    public AudioSource gunAudioSource; // Speaker di Player
+    public AudioClip shootSound;       // Suara DOR
+    public AudioClip reloadSound;      // Suara KOKANG
 
     private float xRotation = 0f;
     private bool isScoped = false;  // Status apakah sedang ngeker atau tidak
@@ -43,6 +46,7 @@ public class SniperController : MonoBehaviour
     // Internal Variables untuk Smooth Recoil
     private float currentRecoilXPos; // Posisi recoil saat ini
     private float targetRecoilXPos;  // Target recoil (puncak hentakan)
+    private float nextTimeToFire = 0f;  // Kapan boleh nembak lagi?
 
     // Internal Variables untuk Weapon Recoil
     private Vector3 originalWeaponPos;
@@ -171,8 +175,30 @@ public class SniperController : MonoBehaviour
         mouseSensitivity = 100f;
     }
 
+    // Fungsi Kecil untuk dipanggil oleh Invoke
+    void PlayReloadSound()
+    {
+        if (gunAudioSource != null && reloadSound != null)
+        {
+            gunAudioSource.PlayOneShot(reloadSound);
+        }
+    }
+
     void Shoot()
     {
+        // MAINKAN SUARA TEMBAK
+        if (gunAudioSource != null && shootSound != null)
+        {
+            gunAudioSource.PlayOneShot(shootSound);
+        }
+
+        // JADWALKAN SUARA RELOAD
+        // Kita delay sedikit (0.6 detik) biar bunyinya gak numpuk sama suara ledakan
+        if (gunAudioSource != null && reloadSound != null)
+        {
+            Invoke("PlayReloadSound", 1f);
+        }
+
         // MAINKAN EFEK API
         if (muzzleFlash != null)
         {
@@ -204,7 +230,7 @@ public class SniperController : MonoBehaviour
             muzzleFlash.Play();
         }
 
-        // APPLY RECOIL
+        // LOGIC RECOIL
         // Kita tambah target recoil, nanti di Update() dia bakal di-smooth-kan
         targetRecoilXPos += verticalRecoil;
 
@@ -217,7 +243,7 @@ public class SniperController : MonoBehaviour
             Quaternion spawnRotation;
             Vector3 forceDirection;
 
-            // --- LOGIKA HYBRID ---
+            // LOGIKA HYBRID
             if (isScoped)
             {
                 // MODE SCOPE: Peluru keluar dari "Mata" (Kamera)
@@ -251,7 +277,7 @@ public class SniperController : MonoBehaviour
                 forceDirection = direction.normalized;
             }
 
-            // --- EKSEKUSI TEMBAK ---
+            // EKSEKUSI TEMBAK
             GameObject bullet = Instantiate(bulletPrefab, spawnPosition, spawnRotation);
 
             // BUG TERPENTAL: IGNORE COLLISION

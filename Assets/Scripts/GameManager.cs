@@ -30,6 +30,11 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverPanel; // Panel Kalah
     public GameObject winPanel;      // Panel Menang
 
+    [Header("Audio")]
+    public AudioSource sfxSource; // Speaker untuk UI
+    public AudioClip winSound;
+    public AudioClip loseSound;
+
     [HideInInspector]
     public int activeBullets = 0; // Menghitung peluru yang masih terbang
     private bool isGameEnded = false; // Biar panel gak muncul dobel
@@ -64,7 +69,7 @@ public class GameManager : MonoBehaviour
         
     }
 
-    // --- LOGIC: REGISTER PELURU ---
+    // LOGIC REGISTER PELURU
     public void RegisterBullet()
     {
         activeBullets++; // Ada peluru baru terbang
@@ -77,7 +82,7 @@ public class GameManager : MonoBehaviour
         CheckGameStatus();
     }
 
-    // --- LOGIC SPAWN TARGET (DELAYED) ---
+    // LOGIC SPAWN TARGET (DELAYED)
     public void SpawnTarget()
     {
         float randomX = Random.Range(-targetAreaWidth, targetAreaWidth);
@@ -90,7 +95,7 @@ public class GameManager : MonoBehaviour
         Instantiate(targetPrefab, spawnPos, Quaternion.identity);
     }
 
-    // --- LOGIC SPAWN OBSTACLE (ANTI-TABRAKAN) ---
+    // LOGIC SPAWN OBSTACLE (ANTI-TABRAKAN)
     public void SpawnObstacleSafe()
     {
         Vector3 spawnPos = Vector3.zero;
@@ -128,8 +133,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // --- LOGIC KENA HIT ---
-
+    // LOGIC KENA HIT
     public void TargetDestroyed(int points)
     {
         if (isGameEnded) return; // Kalau udah game over/win, abaikan skor susulan
@@ -190,6 +194,13 @@ public class GameManager : MonoBehaviour
     {
         isGameEnded = true;
         Debug.Log("MENANG!");
+
+        // SUARA MENANG
+        if (sfxSource != null && winSound != null)
+        {
+            sfxSource.PlayOneShot(winSound);
+        }
+
         if (winPanel != null)
         {
             winPanel.SetActive(true);
@@ -202,6 +213,13 @@ public class GameManager : MonoBehaviour
     {
         isGameEnded = true;
         Debug.Log("GAME OVER");
+
+        // SUARA KALAH
+        if (sfxSource != null && loseSound != null)
+        {
+            sfxSource.PlayOneShot(loseSound);
+        }
+
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
